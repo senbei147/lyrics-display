@@ -25,15 +25,34 @@
       padding: 20px;
       text-align: center;
       min-width: 320px;
-      min-height: 120px; /* カードの高さを固定 */
+      min-height: 160px; /* ふりがな分含め高さを固定 */
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
     }
+    /* カウンター部分：上段にふりがな、下段に大きな数字とハングル（横並び） */
     .counter {
-      font-size: 1.8em;
+      line-height: 1.2;
+    }
+    .counter .counter-furi {
+      font-size: 0.8em;
+      color: #555;
+    }
+    .counter .counter-num-container {
+      margin-top: 2px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .counter .counter-num {
+      font-size: 2.2em;
       font-weight: 500;
+      color: #333;
+    }
+    .counter .counter-hangul {
+      font-size: 1.8em; /* ここを1.8emに調整 */
+      font-weight: bold;
       color: #333;
     }
     .lyrics {
@@ -41,6 +60,11 @@
       font-weight: bold;
       color: #000;
       margin-top: 5px;
+      min-height: 1.2em;
+    }
+    .lyrics ruby rt {
+      font-size: 0.5em; /* ふりがなのサイズを統一 */
+      color: #555;
     }
     .measure {
       font-size: 1.4em;
@@ -101,12 +125,25 @@
     "다리", "팔", "박수", "", "나이제"
   ];
   
-  // countに応じた追加テキスト
-  const extraTexts = {
-    1: "한없는",
-    2: "한 기쁨",
-    3: "무한한",
-    4: "택하신"
+  // カウンターのふりがな情報（数字1〜4）
+  const counterFurigana = {
+    1: { kana: "ハノンヌン", roman: "haneopneun", hangul: "한없는" },
+    2: { kana: "ハンキップン", roman: "han gippeum", hangul: "한 기쁨" },
+    3: { kana: "ムハナン", roman: "muhanhan", hangul: "무한한" },
+    4: { kana: "テカシン", roman: "taekhasin", hangul: "택하신" }
+  };
+
+  // 各ハングル単語に対応するふりがな（歌詞部分）
+  const furiganaMap = {
+    "박수": "<ruby>박수<rt>パクス / baksu</rt></ruby>",
+    "머리": "<ruby>머리<rt>モリ / meori</rt></ruby>",
+    "얼굴": "<ruby>얼굴<rt>オルグル / eolgul</rt></ruby>",
+    "목": "<ruby>목<rt>モク / mok</rt></ruby>",
+    "가슴": "<ruby>가슴<rt>カスム / gaseum</rt></ruby>",
+    "배": "<ruby>배<rt>ベ / bae</rt></ruby>",
+    "다리": "<ruby>다리<rt>タリ / dari</rt></ruby>",
+    "팔": "<ruby>팔<rt>パル / pal</rt></ruby>",
+    "나이제": "<ruby>나이제<rt>ナイジェ / naije</rt></ruby>"
   };
 
   let currentIndex = 0;   // 現在の歌詞インデックス
@@ -128,13 +165,24 @@
       return;
     }
 
-    // 最後の歌詞 ("나이제") ではカウント非表示
+    // 最後の歌詞 ("나이제") ではカウンター非表示
     let counterHTML = "";
     if (currentIndex !== words.length - 1) {
-      counterHTML = `<div class="counter">[ ${countIndex} ${extraTexts[countIndex]} ]</div>`;
+      let cf = counterFurigana[countIndex];
+      // 上段：ふりがな（カタカナ / ローマ字）、下段：大きな数字とハングルを横並びに表示
+      counterHTML = `<div class="counter">
+        <div class="counter-furi">${cf.kana} / ${cf.roman}</div>
+        <div class="counter-num-container">
+          <span class="counter-num">${countIndex}</span>
+          <span class="counter-hangul">${cf.hangul}</span>
+        </div>
+      </div>`;
       countIndex = (countIndex % 4) + 1;
     }
-    let lyrics = words[currentIndex] || "　"; // 空文字の場合は全角スペースで高さを確保
+    
+    // 歌詞の表示：ハングルが空でない場合はふりがな付きで表示。空の場合は全角スペースで高さを確保
+    let word = words[currentIndex];
+    let lyrics = word ? (furiganaMap[word] || word) : "　";
     document.getElementById("counterText").innerHTML = counterHTML;
     document.getElementById("displayText").innerHTML = lyrics;
     
@@ -148,7 +196,7 @@
       document.getElementById("measureText").innerHTML = "";
     }
 
-    // 7秒後にカード内容をクリア（ただし、カード自体の高さは固定）
+    // 7秒後にカード内容をクリア（カード自体の高さは固定）
     displayTimeout = setTimeout(() => {
       document.getElementById("counterText").innerHTML = "-";
       document.getElementById("displayText").innerHTML = "　";
@@ -183,4 +231,4 @@
 </script>
 
 </body>
-  </html>
+</html>
